@@ -5,16 +5,15 @@ import 'package:flutter_socket_io/flutter_socket_io.dart';
 import 'package:flutter_socket_io/socket_io_manager.dart';
 
 class Joinchat extends StatefulWidget {
-  
   @override
   _JoinchatState createState() => _JoinchatState();
 }
-  SocketIO socketIO;
-class _JoinchatState extends State<Joinchat> {
 
+SocketIO socketIO;
+
+class _JoinchatState extends State<Joinchat> {
   @override
   void initState() {
- 
     //Creating the socket
     socketIO = SocketIOManager().createSocketIO(
       'https://real-chat-12345.herokuapp.com',
@@ -26,24 +25,28 @@ class _JoinchatState extends State<Joinchat> {
     socketIO.connect();
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(child: FlatButton(
-        onPressed: () async {
-         socketIO.sendMessage(
-              'join', json.encode({'usertype':'provider','uid':'xyz','pid':'abc'}));
-            Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => ChatPage()),
-                  );
-        },
-         child: Text('Join Chat'))
-        ),
+      body: SafeArea(
+          child: FlatButton(
+              onPressed: () async {
+                socketIO.sendMessage(
+                    'join',
+                    json.encode(
+                        //Change usertype for customer side chat app
+             
+                        {'usertype': 'provider', 'uid': 'xyz', 'pid': 'abc'}));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ChatPage()),
+                );
+              },
+              child: Text('Join Chat'))),
     );
   }
 }
-
 
 class ChatPage extends StatefulWidget {
   @override
@@ -52,7 +55,7 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   //SocketIO socketIO;
-  List<Map<String,String>> messages;
+  List<Map<String, String>> messages;
   double height, width;
   TextEditingController textController;
   ScrollController scrollController;
@@ -60,17 +63,21 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void initState() {
     //Initializing the message list
-    messages = List<Map<String,String>>();
+    messages = List<Map<String, String>>();
     //Initializing the TextEditingController and ScrollController
     textController = TextEditingController();
     scrollController = ScrollController();
     socketIO.subscribe('receive_message', (jsonData) {
-      print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-
       //Convert the JSON data received into a Map
       Map<String, dynamic> data = json.decode(jsonData);
       print('\n\n\n $data\n\n\n');
-      this.setState(() {messages.add({"message":data['text']['message'],"senderType":data['usertype']});print(data);});
+      this.setState(() {
+        messages.add({
+          "message": data['text']['message'],
+          "senderType": data['usertype']
+        });
+        print(data);
+      });
       print(messages);
       scrollController.animateTo(
         scrollController.position.maxScrollExtent,
@@ -88,7 +95,9 @@ class _ChatPageState extends State<ChatPage> {
         padding: const EdgeInsets.all(20.0),
         margin: const EdgeInsets.only(bottom: 20.0, left: 20.0),
         decoration: BoxDecoration(
-          color: messages[index]['senderType'] != "provider"?Colors.deepPurple:Colors.black,
+          color: messages[index]['senderType'] != "provider"
+              ? Colors.deepPurple
+              : Colors.black,
           borderRadius: BorderRadius.circular(20.0),
         ),
         child: Text(
@@ -137,7 +146,8 @@ class _ChatPageState extends State<ChatPage> {
           socketIO.sendMessage(
               'send_message', json.encode({'message': textController.text}));
           //Add the message to the list
-          this.setState(() => messages.add({"message":textController.text,"senderType":"provider"}));
+          this.setState(() => messages
+              .add({"message": textController.text, "senderType": "provider"})); //Change sender type to customer for customer side chat app
           textController.text = '';
           //Scrolldown the list to show the latest message
           scrollController.animateTo(
@@ -169,7 +179,6 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-
     height = MediaQuery.of(context).size.height;
     width = MediaQuery.of(context).size.width;
     return Scaffold(
